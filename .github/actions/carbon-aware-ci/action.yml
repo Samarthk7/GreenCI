@@ -1,0 +1,15 @@
+name: 'Carbon-Aware Deployment Optimizer'
+description: 'Our special tool that finds the best region for our app.'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Get Python ready
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Run the Python script
+      shell: bash
+      run: |
+        python scripts/carbon_optimizer.py

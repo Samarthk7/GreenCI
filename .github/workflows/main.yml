@@ -1,0 +1,40 @@
+name: Green CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build the Docker box
+        run: |
+          echo "Building the special box for our web app..."
+          docker build -t my-green-app .
+          echo "The box is ready!"
+          
+  carbon_analysis_and_report:
+    runs-on: ubuntu-latest
+    needs: build_app
+    steps:
+      - name: Get the code again
+        uses: actions/checkout@v2
+        
+      - name: Run our special analysis tool
+        id: optimizer_tool
+        uses: ./.github/actions/carbon-aware-ci
+
+      - name: Tell us what the tool found
+        shell: bash
+        run: |
+          echo "--- Our Robot's Report ---"
+          echo "Our analysis tool has finished its work."
+          echo "It recommends putting our app in:"
+          echo "Location: ${{ steps.optimizer_tool.outputs.optimal_region_provider }} - ${{ steps.optimizer_tool.outputs.optimal_region }}"
+          echo "Carbon Footprint Score: ${{ steps.optimizer_tool.outputs.optimal_carbon_intensity }} gCO2eq/kWh"
+          echo "---------------------------"
