@@ -1,0 +1,38 @@
+[
+  {
+    "provider": "AWS",
+    "region": "us-east-1",
+    "location": "N. Virginia, USA",
+    "carbon_intensity_g_co2_per_kwh": 350
+  },
+  {
+    "provider": "Azure",
+    "region": "westus2",
+    "location": "Washington, USA",
+    "carbon_intensity_g_co2_per_kwh": 410
+  },
+  {
+    "provider": "GCP",
+    "region": "us-central1",
+    "location": "Iowa, USA",
+    "carbon_intensity_g_co2_per_kwh": 150
+  },
+  {
+    "provider": "Azure",
+    "region": "northeurope",
+    "location": "Dublin, Ireland",
+    "carbon_intensity_g_co2_per_kwh": 120
+  },
+  {
+    "provider": "AWS",
+    "region": "ap-southeast-2",
+    "location": "Sydney, Australia",
+    "carbon_intensity_g_co2_per_kwh": 480
+  },
+  {
+    "provider": "GCP",
+    "region": "europe-west4",
+    "location": "Netherlands",
+    "carbon_intensity_g_co2_per_kwh": 90
+  }
+]
