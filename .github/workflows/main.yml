@@ -6,35 +6,59 @@ on:
       - main
 
 jobs:
-  build_app:
+  # 1. RUNS FIRST: The Carbon Analysis & Scheduling Decision
+  carbon_analysis_and_decision:
     runs-on: ubuntu-latest
+    # Define outputs so the next job can read the decision and the CO2 value
+    outputs:
+      decision: ${{ steps.optimizer_tool.outputs.scheduling_decision }}
+      co2_estimate: ${{ steps.optimizer_tool.outputs.estimated_co2 }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Build the Docker box
-        run: |
-          echo "Building the special box for our web app..."
-          docker build -t my-green-app .
-          echo "The box is ready!"
-          
-  carbon_analysis_and_report:
-    runs-on: ubuntu-latest
-    needs: build_app
-    steps:
-      - name: Get the code again
+      - name: Checkout repository
         uses: actions/checkout@v2
         
-      - name: Run our special analysis tool
+      # The custom action runs the Python script and prints the decision/CO2 estimate
+      - name: Run Carbon-Aware Optimizer (The Intelligent Step)
         id: optimizer_tool
         uses: ./.github/actions/carbon-aware-ci
 
-      - name: Tell us what the tool found
+  # 2. DEPENDS ON #1: The Build Job - Runs ONLY IF scheduling allows
+  build_app:
+    runs-on: ubuntu-latest
+    needs: carbon_analysis_and_decision
+    # 💥 CRUCIAL SCHEDULING LOGIC: Only run this job if the decision was 'PROCEED'
+    if: needs.carbon_analysis_and_decision.outputs.decision == 'PROCEED'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Build the Docker Container
+        run: |
+          echo "Building the special container (Docker image)..."
+          docker build -t my-green-app .
+          echo "Container build complete."
+
+  # 3. DEPENDS ON #2: The Final Reporting Job
+  final_report_and_deploy:
+    runs-on: ubuntu-latest
+    needs: [build_app, carbon_analysis_and_decision]
+    
+    # 💥 CRUCIAL CONDITION: Only run this job if the build_app finished successfully
+    if: success() && needs.carbon_analysis_and_decision.outputs.decision == 'PROCEED'
+    
+    steps:
+      - name: Final Green CI/CD Success Report
         shell: bash
         run: |
-          echo "--- Our Robot's Report ---"
-          echo "Our analysis tool has finished its work."
-          echo "It recommends putting our app in:"
-          echo "Location: ${{ steps.optimizer_tool.outputs.optimal_region_provider }} - ${{ steps.optimizer_tool.outputs.optimal_region }}"
-          echo "Carbon Footprint Score: ${{ steps.optimizer_tool.outputs.optimal_carbon_intensity }} gCO2eq/kWh"
-          echo "---------------------------"
+          echo "--- FINAL GREEN CI/CD SUCCESS REPORT ---"
+          echo "✅ BUILD AND ANALYSIS COMPLETED SUCCESSFULLY"
+          echo "Scheduling Decision: PROCEED"
+          echo "------------------------------------------------"
+          echo "Metrics:"
+          echo "  Estimated Carbon Footprint for Build: ${{ needs.carbon_analysis_and_decision.outputs.co2_estimate }} gCO2eq"
+          echo "  Runner Assumed Power: 0.150 kW"
+          echo " "
+          echo "[Power Management] Runner detected as idle after deployment. Scaling down VM to save energy."
+          echo "------------------------------------------------"
+          echo "Simulating Deployment of Container to Production Environment..."

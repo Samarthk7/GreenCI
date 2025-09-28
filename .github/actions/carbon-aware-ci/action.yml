@@ -9,6 +9,12 @@ runs:
       with:
         python-version: '3.x'
 
+    # NEW STEP: Install the 'requests' library
+    - name: Install dependencies
+      shell: bash
+      run: |
+        pip install -r src/requirements.txt
+        
     - name: Run the Python script
       shell: bash
       run: |
