@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 # Live API endpoint for National Carbon Intensity (Great Britain)
 CARBON_API_URL = "https://api.carbonintensity.org.uk/intensity"
 # Scheduling threshold: If intensity is above this, we defer the build. (gCO2eq/kWh)
-CARBON_THRESHOLD = 300
+CARBON_THRESHOLD = 50
 # Assumed power usage of the build runner (Simulation)
 ASSUMED_RUNNER_POWER_KW = 0.150 # 150 Watts (a common estimate for a cloud VM)
 
