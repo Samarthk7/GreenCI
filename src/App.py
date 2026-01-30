@@ -60,7 +60,7 @@ def config():
         return jsonify({"message": "Configuration updated successfully"})
     return jsonify({
         "version": "1.0.0",
-        "environment": "dev"
+        "environment": "development"
     })
 
 # ------------------------------
