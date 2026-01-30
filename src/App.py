@@ -24,7 +24,7 @@ def simulate_processing_delay():
 @app.route('/')
 def home():
     return """
-    <h1>🚀 Demo Development Application</h1>
+    <h1>🚀 Demo Development Application and test</h1>
     <p>This is a simulated application used to test GreenCI commit evaluation.</p>
     """
 
