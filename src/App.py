@@ -24,7 +24,7 @@ def simulate_processing_delay():
 @app.route('/')
 def home():
     return """
-    <h1>🚀 Demo Development Application and test</h1>
+    <h1>🚀 Demo Development Application </h1>
     <p>This is a simulated application used to test GreenCI commit evaluation.</p>
     """
 
@@ -34,6 +34,11 @@ def health():
         "status": "OK",
         "timestamp": str(datetime.datetime.now())
     })
+
+@app.route('/status')
+def status():
+    return jsonify({"service": "running"})
+
 
 @app.route('/metrics')
 def metrics():
@@ -60,7 +65,7 @@ def config():
         return jsonify({"message": "Configuration updated successfully"})
     return jsonify({
         "version": "1.0.0",
-        "environment": "development"
+        "environment": "dev"
     })
 
 # ------------------------------
