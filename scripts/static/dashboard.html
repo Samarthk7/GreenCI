@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hybrid Green CI/CD Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    min-height: 100vh;
+    color: #e2e8f0;
+}
+</style>
+</head>
+
+<body class="p-4 sm:p-8">
+
+<div class="max-w-6xl mx-auto">
+
+<!-- ================= ORIGINAL TOP LAYER (UNCHANGED STYLE) ================= -->
+
+<header class="text-center mb-10">
+    <h1 class="text-4xl sm:text-5xl font-bold text-green-400 mb-2">
+        Hybrid Green CI/CD Dashboard
+    </h1>
+    <p class="text-xl text-gray-400">
+        Real-Time Sustainability Scorecard for DevOps Workloads
+    </p>
+</header>
+
+<div id="status-message-card"
+     class="bg-blue-600 p-6 rounded-xl shadow-2xl mb-8 transition duration-500">
+
+    <p class="text-2xl font-semibold text-white mb-2">Grid Status:</p>
+
+    <div class="flex flex-col sm:flex-row justify-between items-center">
+        <span id="grid-status-text"
+              class="text-4xl sm:text-5xl font-extrabold text-white">
+            Fetching Live Data...
+        </span>
+
+        <span id="live-intensity-gauge"
+              class="text-3xl sm:text-4xl font-bold bg-white text-blue-600 px-4 py-2 rounded-lg mt-4 sm:mt-0 shadow-lg">
+            --- gCO2/kWh
+        </span>
+    </div>
+
+    <p id="scheduling-tip"
+       class="mt-4 text-white font-medium">
+        Scheduling non-urgent builds intelligently reduces emissions.
+    </p>
+</div>
+
+<!-- ================= ORIGINAL METRIC CARDS ================= -->
+
+<div class="grid md:grid-cols-4 gap-6 mb-10">
+
+    <div class="bg-gray-800 p-6 rounded-xl shadow-xl border-t-4 border-green-500">
+        <h3 class="text-lg font-medium text-gray-300">Live CI System CO2 Rate</h3>
+        <p id="live-co2-rate"
+           class="text-4xl font-extrabold text-white mt-1">--</p>
+    </div>
+
+    <div class="bg-gray-800 p-6 rounded-xl shadow-xl border-t-4 border-emerald-500">
+        <h3 class="text-lg font-medium text-gray-300">Last Estimated CO2 Cost</h3>
+        <p id="co2-cost-metric"
+           class="text-4xl font-extrabold text-white mt-1">--</p>
+    </div>
+
+    <div class="bg-gray-800 p-6 rounded-xl shadow-xl border-t-4 border-blue-500">
+        <h3 class="text-lg font-medium text-gray-300">Build Success Rate</h3>
+        <p id="build-rate-metric"
+           class="text-4xl font-extrabold text-white mt-1">--</p>
+    </div>
+
+    <div class="bg-gray-800 p-6 rounded-xl shadow-xl border-t-4 border-yellow-500">
+        <h3 class="text-lg font-medium text-gray-300">Average Green Testing Score</h3>
+        <p id="green-score-metric"
+           class="text-4xl font-extrabold text-white mt-1">--</p>
+    </div>
+    <div class="bg-gray-800 p-6 rounded-xl shadow-xl border-t-4 border-purple-500">
+        <h3 class="text-lg font-medium text-gray-300">AI Model Accuracy</h3>
+        <p id="model-accuracy" 
+           class="text-4xl font-extrabold text-purple-400 mt-1">--</p>
+    </div>
+
+</div>
+
+<!-- ================= NEW ADVANCED FEATURES ================= -->
+
+<div class="grid md:grid-cols-2 gap-6 mb-10">
+
+    <!-- Sustainability Score -->
+    <div class="bg-gray-800 p-6 rounded-xl shadow-xl border-t-4 border-green-400">
+        <h2 class="text-xl font-semibold text-white mb-4">
+            GreenCI Sustainability Score
+        </h2>
+        <p id="sustainability-score"
+           class="text-5xl font-extrabold text-green-400">--</p>
+    </div>
+
+    <!-- Demo Mode Toggle -->
+    <div class="bg-gray-800 p-6 rounded-xl shadow-xl border-t-4 border-blue-400 flex flex-col justify-between">
+        <div>
+            <h2 class="text-xl font-semibold text-white mb-4">
+                Demo Mode Control
+            </h2>
+            <p class="text-sm text-gray-400 mb-4">
+                Simulate dirty grid to demonstrate AI-based blocking.
+            </p>
+        </div>
+        <button id="demo-toggle-btn"
+          onclick="toggleDemoMode()"
+          class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+          Enable Dirty Grid Simulation
+        </button>
+
+    </div>
+
+</div>
+
+<!-- AI Explanation -->
+<div class="bg-gray-800 p-6 rounded-xl shadow-xl border-t-4 border-purple-500 mb-10">
+    <h2 class="text-xl font-semibold text-white mb-4">
+        Latest AI Decision Explanation
+    </h2>
+    <div id="ai-explanation"
+         class="text-gray-300 whitespace-pre-line text-sm">
+        Loading explanation...
+    </div>
+    <div class="mt-4">
+    <div class="w-full bg-gray-700 rounded-full h-3">
+        <div id="ai-confidence-bar"
+             class="bg-green-400 h-3 rounded-full"
+             style="width:0%">
+        </div>
+    </div>
+    </div>
+</div>
+
+<!-- Smart Scheduler -->
+<div class="bg-gray-800 p-6 rounded-xl shadow-xl border-t-4 border-yellow-500 mb-10">
+    <h2 class="text-xl font-semibold text-white mb-4">
+        Smart Build Scheduler Recommendation
+    </h2>
+    <p id="scheduler-recommendation"
+       class="text-gray-300 text-sm">
+        Analyzing optimal window...
+    </p>
+</div>
+
+<!-- Decision Distribution Chart -->
+<div class="bg-gray-800 p-6 rounded-xl shadow-xl mb-10">
+    <h2 class="text-xl font-semibold text-white mb-4">
+        Decision Distribution
+    </h2>
+    <canvas id="decisionChart" height="120"></canvas>
+</div>
+
+</div>
+
+<!-- ================= SCRIPT ================= -->
+
+<script>
+let decisionChart;
+
+// Fetch Grid + Push Status
+async function fetchPushStatus() {
+    const res = await fetch("/api/ai/push_status");
+    const data = await res.json();
+
+    document.getElementById("live-intensity-gauge").textContent =
+        data.intensity_g_per_kwh + " gCO2/kWh";
+
+    document.getElementById("grid-status-text").textContent =
+        data.allowed ? "GRID CLEAN" : "GRID DIRTY";
+
+    document.getElementById("status-message-card").className =
+        data.allowed ?
+        "bg-green-600 p-6 rounded-xl shadow-2xl mb-8" :
+        "bg-red-600 p-6 rounded-xl shadow-2xl mb-8";
+}
+
+// Sustainability Score
+async function loadSustainabilityScore() {
+    const res = await fetch("/api/ai/decisions/summary");
+    const data = await res.json();
+
+    document.getElementById("sustainability-score").textContent =
+        data.sustainability_score + " / 100";
+
+    document.getElementById("build-rate-metric").textContent =
+        ((data.proceed_count / Math.max(1,data.total_decisions))*100).toFixed(0) + "%";
+
+    document.getElementById("green-score-metric").textContent =
+        (100 - data.sustainability_score) + "%";
+
+    document.getElementById("live-co2-rate").textContent =
+        (0.150 * data.intensity_used_g_per_kwh / 1000).toFixed(4) + " gCO2/s";
+
+    document.getElementById("co2-cost-metric").textContent =
+        data.estimated_carbon_saved_g.toFixed(2) + " g Saved";
+}
+
+// Explanation
+async function loadLatestExplanation() {
+    const res = await fetch("/api/ai/decisions/latest?limit=1");
+    const data = await res.json();
+
+    if (data.decisions.length > 0) {
+        const d = data.decisions[0];
+
+        // Set explanation
+        document.getElementById("ai-explanation").textContent =
+            d.explanation || "No explanation available.";
+
+        // Set confidence bar
+        const confidence = (d.ml_prob || 0) * 100;
+        const bar = document.getElementById("ai-confidence-bar");
+        bar.style.width = confidence + "%";
+    }
+}
+
+
+async function updateMonthlyProjection() {
+    const res = await fetch("/api/ai/decisions/summary");
+    const data = await res.json();
+
+    const monthly = data.estimated_carbon_saved_g * 30;
+
+    document.getElementById("monthly-projection").textContent =
+        monthly.toFixed(1) + " g CO2 / month";
+}
+
+async function updateComparison() {
+    const res = await fetch("/api/ai/decisions/summary");
+    const data = await res.json();
+
+    const saved = data.estimated_carbon_saved_g;
+    const without = data.total_decisions * 1.5;
+    const withGreenCI = without - saved;
+
+    document.getElementById("comparison-text").textContent =
+        `Without GreenCI: ${without.toFixed(1)} g CO2\n` +
+        `With GreenCI: ${withGreenCI.toFixed(1)} g CO2`;
+}
+
+// Decision Chart
+async function loadDecisionChart() {
+    const res = await fetch("/api/ai/decisions/latest?limit=20");
+    const data = await res.json();
+
+    let proceed = 0;
+    let hold = 0;
+
+    data.decisions.forEach(d => {
+        if (d.decision === "PROCEED") proceed++;
+        else if (d.decision === "HOLD") hold++;
+    });
+
+    const ctx = document.getElementById("decisionChart").getContext("2d");
+
+    if (decisionChart) decisionChart.destroy();
+
+    decisionChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Proceed', 'Hold'],
+            datasets: [{
+                data: [proceed, hold],
+                backgroundColor: ['#22c55e','#ef4444']
+            }]
+        }
+    });
+}
+
+// Scheduler
+function updateScheduler() {
+    const next = new Date();
+    next.setHours(next.getHours() + 2);
+
+    document.getElementById("scheduler-recommendation").textContent =
+        "Recommended next clean window: " +
+        next.toLocaleTimeString() +
+        " (Expected low carbon period).";
+}
+async function loadModelInfo() {
+    const res = await fetch("/api/ai/model_info");
+    const data = await res.json();
+    if (data.accuracy !== null) {
+        document.getElementById("model-accuracy").textContent =
+            (data.accuracy * 100).toFixed(1) + "%";
+    }
+}
+
+// Demo Toggle
+async function toggleDemoMode() {
+    const res = await fetch("/api/demo/toggle");
+    const data = await res.json();
+
+    const btn = document.getElementById("demo-toggle-btn");
+
+    if (data.demo_mode) {
+        // Dirty mode ON
+        btn.textContent = "Disable Dirty Grid Simulation";
+        btn.classList.remove("bg-blue-500", "hover:bg-blue-600");
+        btn.classList.add("bg-red-500", "hover:bg-red-600");
+    } else {
+        // Back to live grid
+        btn.textContent = "Enable Dirty Grid Simulation";
+        btn.classList.remove("bg-red-500", "hover:bg-red-600");
+        btn.classList.add("bg-blue-500", "hover:bg-blue-600");
+    }
+
+    // Force refresh
+    fetchPushStatus();
+    loadSustainabilityScore();
+    loadLatestExplanation();
+}
+
+
+// Init
+document.addEventListener("DOMContentLoaded", () => {
+    fetchPushStatus();
+    loadSustainabilityScore();
+    loadLatestExplanation();
+    loadDecisionChart();
+    updateScheduler();
+    loadModelInfo();
+
+
+    setInterval(() => {
+    console.log("Refreshing dashboard...");
+    fetchPushStatus();
+    loadSustainabilityScore();
+    loadLatestExplanation();
+    loadDecisionChart();
+    }, 60000);
+});
+</script>
+
+</body>
+</html>

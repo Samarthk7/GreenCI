@@ -1,0 +1,187 @@
+import os
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import joblib
+import random
+from sklearn.metrics import classification_report, accuracy_score, precision_score, recall_score, f1_score, ConfusionMatrixDisplay, roc_curve, auc
+from sklearn.preprocessing import label_binarize
+from src.model import build_cnn_model, visualize_sample_images, plot_training_history, plot_confusion_matrix, visualize_predictions, plot_class_distribution
+
+IMG_SIZE = 224
+PHYSICAL_DATA_PATH = r"C:\Users\Sharvari H M\OneDrive\Desktop\dsprj\Solar_Dataset\Physical data"
+MODEL_SAVE_PATH = "models/solar_defect_cnn.h5"
+ENCODER_PATH = 'src/label_encoder.pkl'
+
+# Load the trained model
+if not os.path.exists(MODEL_SAVE_PATH):
+    raise FileNotFoundError("Trained model not found. Train the model first using train.py.")
+model = load_model(MODEL_SAVE_PATH)
+
+# Load the Label Encoder
+if not os.path.exists(ENCODER_PATH):
+    raise FileNotFoundError("Label encoder not found. Ensure it is generated during training.")
+label_encoder = joblib.load(ENCODER_PATH)
+classes = ['Bird-drop', 'Clean', 'Dusty', 'Electrical-damage', 'Physical-Damage', 'Snow-Covered']
+visualize_sample_images(PHYSICAL_DATA_PATH, classes)
+
+# Data generators with validation split
+datagen = ImageDataGenerator(
+    rescale=1./255,
+    validation_split=0.2,
+    rotation_range=20,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True
+)
+
+train_generator = datagen.flow_from_directory(
+    PHYSICAL_DATA_PATH,
+    target_size=(IMG_SIZE, IMG_SIZE),
+    batch_size=32,
+    class_mode='categorical',
+    subset='training',
+    shuffle=True
+)
+
+validation_generator = datagen.flow_from_directory(
+    PHYSICAL_DATA_PATH,
+    target_size=(IMG_SIZE, IMG_SIZE),
+    batch_size=32,
+    class_mode='categorical',
+    subset='validation',
+    shuffle=False
+)
+
+plot_confusion_matrix(model, validation_generator, label_encoder)
+
+# Visualize class distribution
+plot_class_distribution(PHYSICAL_DATA_PATH, classes)
+
+def preprocess_image(image_path, img_size=IMG_SIZE):
+    img = cv2.imread(image_path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = cv2.resize(img, (img_size, img_size))
+    img = np.expand_dims(img, axis=0)  # Add batch dimension here
+    return img / 255.0
+
+def classify_and_display_image(model, label_encoder, data_path=PHYSICAL_DATA_PATH):
+    image_files = [
+        os.path.join(root, file)
+        for root, _, files in os.walk(data_path)
+        for file in files if file.endswith(('.jpg', '.jpeg', '.png'))
+    ]
+
+    if not image_files:
+        print("No images found!")
+        return
+
+    random_image_path = random.choice(image_files)
+    print(f"Testing with image: {random_image_path}")
+
+    image = preprocess_image(random_image_path)
+    image_to_show = np.squeeze(image)  # Remove the batch dimension for visualization
+    plt.imshow(image_to_show)
+    plt.title("Input Image")
+    plt.axis('off')
+    plt.show()
+
+    image = image.reshape(1, IMG_SIZE, IMG_SIZE, 3)
+    prediction = model.predict(image)
+    predicted_class = label_encoder.inverse_transform([np.argmax(prediction)])
+    print(f"Predicted Class: {predicted_class[0]}")
+
+    visualize_prediction_density(model, image, label_encoder)
+
+def classify_image(image_path):
+    image = preprocess_image(image_path)
+    prediction = model.predict(image)
+    predicted_class = label_encoder.inverse_transform([np.argmax(prediction)])
+    print(f"Predicted Class: {predicted_class[0]}")
+    visualize_prediction_density(model, image, label_encoder)
+    return predicted_class[0]
+
+def evaluate_model_on_validation_data(model, validation_generator, label_encoder):
+    validation_generator.reset()
+    y_pred = model.predict(validation_generator)
+    y_pred_classes = np.argmax(y_pred, axis=1)
+    y_true = validation_generator.classes
+
+    y_pred_labels = label_encoder.inverse_transform(y_pred_classes)
+    y_true_labels = label_encoder.inverse_transform(y_true)
+
+    print("\nClassification Report:")
+    print(classification_report(y_true_labels, y_pred_labels, target_names=validation_generator.class_indices.keys()))
+
+    accuracy = accuracy_score(y_true_labels, y_pred_labels)
+    precision = precision_score(y_true_labels, y_pred_labels, average='weighted')
+    recall = recall_score(y_true_labels, y_pred_labels, average='weighted')
+    f1 = f1_score(y_true_labels, y_pred_labels, average='weighted')
+
+    print(f"Accuracy: {accuracy:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1-Score: {f1:.4f}")
+
+    ConfusionMatrixDisplay.from_predictions(y_true, y_pred_classes, display_labels=label_encoder.classes_)
+    plt.title("Confusion Matrix")
+    plt.show()
+
+def visualize_prediction_density(model, image, label_encoder):
+    prediction_probs = model.predict(image).flatten()
+
+    plt.bar(label_encoder.classes_, prediction_probs, color='skyblue')
+    plt.title("Prediction Probability Distribution")
+    plt.xlabel("Classes")
+    plt.ylabel("Probability")
+    plt.xticks(rotation=45)
+    plt.ylim(0, 1)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.show()
+
+def plot_roc_auc(model, validation_generator, label_encoder):
+    validation_generator.reset()
+    y_true = label_binarize(validation_generator.classes, classes=range(len(label_encoder.classes_)))
+    y_pred = model.predict(validation_generator)
+
+    fpr = {}
+    tpr = {}
+    roc_auc = {}
+    for i in range(len(label_encoder.classes_)):
+        fpr[i], tpr[i], _ = roc_curve(y_true[:, i], y_pred[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
+
+    plt.figure(figsize=(10, 8))
+    for i, label in enumerate(label_encoder.classes_):
+        plt.plot(fpr[i], tpr[i], label=f'{label} (AUC = {roc_auc[i]:.2f})')
+
+    plt.plot([0, 1], [0, 1], 'k--', label="Random Guess")
+    plt.title("ROC-AUC Curves")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.legend(loc='lower right')
+    plt.grid(alpha=0.5)
+    plt.show()
+
+# Evaluation pipeline
+evaluate_model_on_validation_data(model, validation_generator, label_encoder)
+plot_roc_auc(model, validation_generator, label_encoder)
+
+# Test with a random image
+classify_and_display_image(model, label_encoder)
+
+test_image_path = r"C:\Users\Sharvari H M\OneDrive\Desktop\dsprj\test_image\snow_test2.jpg"  # Update with actual path
+if not os.path.exists(test_image_path):
+    print(f"Test image not found at {test_image_path}")
+else:
+    predicted_class = classify_image(test_image_path)
+    img = cv2.imread(test_image_path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    plt.imshow(img)
+    plt.title(f"Predicted: {predicted_class}")
+    plt.axis('off')
+    plt.show()

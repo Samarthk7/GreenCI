@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pass or Fail Checker</title>
+<style>
+body{
+    font-family: Arial;
+    text-align: center;
+    margin-top: 100px;
+}
+
+input{
+    padding:10px;
+    font-size:16px;
+}
+
+button{
+    padding:10px 20px;
+    font-size:16px;
+    margin-top:10px;
+}
+
+#result{
+    margin-top:20px;
+    font-size:22px;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Student Result Checker</h2>
+
+<p>Enter Marks:</p>
+
+<input type="number" id="marks" placeholder="Enter marks">
+
+<br><br>
+
+<button onclick="checkResult()">Check Result</button>
+
+<div id="result"></div>
+
+<script src="marks.js"></script>
+
+</body>
+</html>
