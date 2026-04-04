@@ -28,6 +28,12 @@ def home():
     <p>This is a simulated application used to test GreenCI commit evaluation.</p>
     """
 
+@app.route('/health')
+def health():
+    return jsonify({
+        "status": "OK",
+        "timestamp": str(datetime.datetime.now())
+    })
 
 @app.route('/status')
 def status():
