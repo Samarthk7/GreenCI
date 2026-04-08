@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import random
 import datetime
+import psutil
 
 app = Flask(__name__)
 
@@ -26,6 +27,7 @@ def home():
     return """
     <h1>🚀 Demo Development Application </h1>
     <p>This is a simulated application used to test GreenCI commit evaluation.</p>
+    <h1>🚀 Hello </h1>
     """
 
 @app.route('/health')
@@ -40,13 +42,18 @@ def status():
     return jsonify({"service": "running"})
 
 
-@app.route('/metrics')
+@app.route("/metrics")
 def metrics():
-    return jsonify({
-        "cpu_load": calculate_system_load(),
-        "memory_usage": random.randint(512, 4096),
-        "active_sessions": random.randint(5, 50)
-    })
+    try:
+        cpu = psutil.cpu_percent(interval=0.5)
+        return {
+            "cpu_percent": cpu
+        }
+    except Exception as e:
+        return {
+            "cpu_percent": 0,
+            "error": str(e)
+        }
 
 @app.route('/build', methods=['POST'])
 def trigger_build():
