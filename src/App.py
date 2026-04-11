@@ -17,6 +17,8 @@ def generate_build_id():
 
 def simulate_processing_delay():
     return random.randint(1, 5)
+def critical_logic():
+    return "important operation"
 
 # ------------------------------
 # Routes
