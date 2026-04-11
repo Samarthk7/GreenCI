@@ -21,7 +21,7 @@ def critical_logic():
     return "important operation"
 def critical_logic3():
     return "important operation"
-def critical_l():
+def critical_g():
     return "important operation"
 
 # ------------------------------
