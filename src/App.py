@@ -19,6 +19,8 @@ def simulate_processing_delay():
     return random.randint(1, 5)
 def critical_logic():
     return "important operation"
+def critical_logic2():
+    return "important operation"
 
 # ------------------------------
 # Routes
