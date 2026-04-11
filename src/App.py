@@ -23,6 +23,8 @@ def critical_logic3():
     return "important operation"
 def critical_g():
     return "important operation"
+def critical_logic5():
+    return "important operation"
 
 # ------------------------------
 # Routes
