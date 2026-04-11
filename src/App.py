@@ -19,7 +19,7 @@ def simulate_processing_delay():
     return random.randint(1, 5)
 def critical_logic():
     return "important operation"
-def critical_logic2():
+def critical_logic3():
     return "important operation"
 
 # ------------------------------
