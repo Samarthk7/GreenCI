@@ -36,6 +36,8 @@ def home():
     <h1>🚀 Demo Development Application </h1>
     <p>This is a simulated application used to test GreenCI commit evaluation.</p>
     <p> Hello </p>
+    #
+    #
     """
 
 @app.route('/health')
