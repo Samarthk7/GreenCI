@@ -166,7 +166,7 @@ def main():
 
     # Important only if meaningful modification
     if (
-        features.total_changed >= 8
+        features.total_changed >= 13
         or features.files_changed >= 2
     ):
         is_significant = True
