@@ -161,11 +161,14 @@ def main():
     changes = parse_numstat(diff)
     features = extract_features(changes)
 
-    # 🔥 IMPORTANT CHANGE DETECTION (DEMO SAFE)
+    # 🔥 IMPROVED SIGNIFICANCE DETECTION
     is_significant = False
 
-    # Since numstat doesn't give code, use line count
-    if features.total_changed >= 2:
+    # Important only if meaningful modification
+    if (
+        features.total_changed >= 8
+        or features.files_changed >= 2
+    ):
         is_significant = True
 
     print(f"[DEBUG] Lines Changed: {features.total_changed}")
